@@ -10,7 +10,7 @@ def login():
             encontrou = True
             if dados['senha'] == senha_requerida:
                 print(f"Bem-vindo(a) {nome}, login com sucesso!")
-                return True  # Retorna que o login foi bem-sucedido
+                return nome,True  # Retorna que o login foi bem-sucedido
             else:
                 print(f"Senha incorreta para o usuário {nome}.")
                 return False  # Retorna que a senha está incorreta
@@ -87,8 +87,53 @@ def valida_data_nascimento(data, idade_minima=18, idade_maxima=120):
         # Se a data não puder ser convertida, será uma data inválida
         return False, "Formato de data inválido. Use o formato dd/mm/yyyy."
 
+def menu_interno(nome_cliente):
+    
+    while True:
+        print('---Menu interno---')
+        print('1- Consultar saldo')
+        print('2- Depositar')
+        print('3- Transferir')
+        print('4- Sacar')
+        print('0-Sair')
+        
+        menu_escolha = int(input())
+        
+        if menu_escolha == 1:
+            print("Saldo:")
+            print(usuarios[nome_cliente]['saldo'])
+        elif menu_escolha == 2:
+            valor_deposito = float(input("Informe a quantidade do deposito: "))         
+            usuarios[nome_cliente]['saldo'] = valor_deposito
+            print("Desposito realizado com sucesso")
+            #print(usuarios[nome_cliente])
+        elif menu_escolha == 3:
+            encontrou = False
+            agencia_transferencia = input("Informe a agência de destino")
+            conta_transferencia = input("Informe a conta de destino")
+            for nome, dados in usuarios.items():
+                if agencia_transferencia in dados['agencia']:
+                    if conta_transferencia in dados['conta']:
+                        encontrou = True
+                        print(f'encontru {nome}')
+            if not encontrou:
+                print("Usuário não encontrado.")
+            return False  # Retorna que o usuário não foi encontrado
 
-def menu_conta():
+            
+        elif menu_escolha == 4:
+            valor_saque=float(input("Digite o valor para sacar:  "))
+            if valor_saque <= usuarios[nome_cliente]['saldo']:
+                usuarios[nome_cliente]['saldo'] += -valor_saque
+                print("Saque efetuado com sucesso!")
+            else:
+                print("Valor não disponivel.")
+
+        elif menu_escolha == 0:
+            #arrumar aqui
+            return "sair"
+
+def menu_conta(nome_cliente):
     while True:
         print("!!!!Bem vindo ao NOOB BANK!!!!")
         print("MENU")
@@ -99,7 +144,12 @@ def menu_conta():
         menu_escolha = int(input())
 
         if menu_escolha == 1:
-            print("Opções da conta não implementadas.")
+            acao = menu_interno(nome_cliente)
+            if acao == 'sair':
+                print('Saindo do sistema...')
+                return 'sair'
+                
+            
         elif menu_escolha == 2:
             return "trocar"  # Indica que o usuário quer trocar de conta
         elif menu_escolha == 3:
@@ -115,19 +165,22 @@ def menu():
     usuario_logado = False
     while True:
         print("----Bem vindo ao NOOB BANK----")
-        print(f"Usuário logado: {usuario_logado}")
-        print("MENU")
-        print("1 - Login")
-        print("2 - Novo cadastro")
-        print("3 - Trocar de usuário")
-        print("0 - Sair")
+        if usuario_logado == True:
+            print(f"Usuário logado: {usuario_logado}")
+        else:
+            print("MENU")
+            print("1 - Login")
+            print("2 - Novo cadastro")
+            print("3 - Trocar de usuário")
+            print("0 - Sair")
         escolha_menu = int(input())
 
         if escolha_menu == 1:
             usuario_logado = login()
+            
             if usuario_logado:
                 while True:
-                    acao = menu_conta()
+                    acao = menu_conta(usuario_logado[0])
                     if acao == "trocar":
                         usuario_logado = False
                         break  # Sai para trocar de usuário
@@ -142,23 +195,38 @@ def menu():
             # Valida o CPF digitado
             if valida_cpf(cpf):
                 print(f"O CPF {cpf} é válido.")
+                data_nascimento=input("Digite sua data de nascimento: ")
+                valido, mensagem = valida_data_nascimento(data_nascimento)
+                if valido:
+                    print(mensagem)
+                    agencia = input("Informe sua agência: ")
+                    conta = input("Informe sua conta: ")
+                    
+                    senha = input("Digite sua senha: ")
+                    usuarios[nome] = {
+                    "cpf": cpf,
+                    "senha": senha,
+                    "data_nascimento": data_nascimento,
+                    "saldo": 0,
+                    "agencia": agencia,
+                    "conta": conta,
+                
+                    }
+                    print("Cadastro realizado com sucesso!")
+
+                else:
+                    print(mensagem)
+                
+
+                
             else:
                 print(f"O CPF {cpf} é inválido.")
+                
 
-            senha = input("Digite sua senha: ")
-    
-            data_nascimento=input("Digite sua data de nascimento: ")
-            valido, mensagem = valida_data_nascimento(data_nascimento)
-            print(valido,mensagem)
+            
            
             
-            usuarios[nome] = {
-                "cpf": cpf,
-                "senha": senha,
-                "data_nascimento": data_nascimento,
-                
-            }
-            print("Cadastro realizado com sucesso!")
+            
         elif escolha_menu == 3:
             print("Por favor, faça login para trocar de usuário.")
         elif escolha_menu == 0:
@@ -169,6 +237,28 @@ def menu():
 
 
 usuarios = {}
+
+
+
+usuarios = {
+    "João Silva": {
+        "cpf": "12345678909",  # CPF válido
+        "senha": "senha123",  # Senha válida
+        "data_nascimento": "15/08/1990",  # Data de nascimento válida
+        "saldo": 500.0,  # Saldo inicial de 500
+        "agencia": '1234',
+        "conta": '123',
+    },
+    "Maria Oliveira": {
+        "cpf": "98765432100",  # CPF válido
+        "senha": "maria2023",  # Senha válida
+        "data_nascimento": "20/05/1985",  # Data de nascimento válida
+        "saldo": 1200.0,  # Saldo inicial de 1200
+        "agencia": '321',
+        "conta": '3214',
+    }
+}
+
 menu()
 
 
